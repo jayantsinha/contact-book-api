@@ -36,6 +36,7 @@ func main() {
 	router.Use(gin.Recovery())
 
 	// Auth Header Verification middleware
+	router.Use(DatabaseMiddleware())
 	router.Use(AuthHeaderMiddleware())
 
 	// Enable gin logging if enabled in config
