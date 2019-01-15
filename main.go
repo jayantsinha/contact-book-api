@@ -64,7 +64,7 @@ func main() {
 		v1.POST("/contact", controller.CreateContact)
 		v1.PUT("/contact/:id", controller.EditContactByID)
 		v1.PUT("/contact", controller.EditContactByEmail)
-		v1.GET("/contact", controller.SearchContact)
+		v1.GET("/contacts/search", controller.SearchContact)
 
 	}
 

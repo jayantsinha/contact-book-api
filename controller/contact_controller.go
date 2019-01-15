@@ -9,10 +9,18 @@ import (
 	"strconv"
 )
 
+// PostRequestBody is for binding the request JSON in the POST request
 type PostRequestBody struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Email     string `json:"email"`
+}
+
+// SearchQueryParams is for binding the request param in search endpoint
+type SearchQueryParams struct {
+	FirstName string `form:"first_name"`
+	LastName  string `form:"last_name"`
+	Email     string `form:"email"`
 }
 
 // GetContacts returns a list of contacts by page number specified.
@@ -44,6 +52,7 @@ func GetContacts(c *gin.Context) {
 		return
 	}
 
+	// TODO: Add a limit key in response which tells the total number of pages available
 	c.JSON(http.StatusOK, contacts)
 }
 
@@ -149,6 +158,43 @@ func EditContactByEmail(c *gin.Context) {
 }
 
 // SearchContact returns the list of contact which matches the search criteria
+// Handler for [GET] /contacts/search
 func SearchContact(c *gin.Context) {
-	
+	params := &SearchQueryParams{}
+	accID := c.MustGet("AccID").(int)
+	db := c.MustGet("DB").(*sqlx.DB)
+	var contacts []model.Contact
+
+	if err := c.BindQuery(params); err != nil {
+		log.Println("Invalid query parameters")
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid query parameters!"})
+		return
+	}
+
+	if params.FirstName == "" && params.LastName == "" && params.Email == "" {
+		log.Println("Empty search criteria passed")
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Empty search criteria"})
+		return
+	}
+	matcher := ""
+	if params.FirstName != "" {
+		matcher += "+" + params.FirstName + "* "
+	}
+	if params.LastName != "" {
+		matcher += "+" + params.LastName + "* "
+	}
+	if params.Email != "" {
+		matcher += "+" + params.Email + "* "
+	}
+
+	err := db.Select(&contacts, "SELECT * FROM contacts WHERE MATCH(first_name, last_name, email) AGAINST(? IN BOOLEAN MODE) AND account_id = ?", matcher, accID)
+	if err != nil {
+		log.Println("Error running search query | ", err)
+	}
+	if len(contacts) == 0 {
+		c.JSON(http.StatusOK, gin.H{})
+		return
+	}
+
+	c.JSON(http.StatusOK, contacts)
 }
