@@ -25,9 +25,16 @@ func init() {
 	DB = model.InitDB(dsn)
 }
 
-func main() {
-
+func setupRouter() *gin.Engine {
 	router := gin.New()
+	router.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
+	return router
+}
+
+func main() {
+	router := setupRouter()
 	if Conf.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -57,9 +64,6 @@ func main() {
 		v1.POST("/contact", controller.CreateContact)
 		v1.PUT("/contact", controller.EditContact)
 	}
-
-	//authorized := router.Group("/v1", gin.BasicAuth(gin.Accounts{}))
-	//authorized.GET("/contacts", controller.)
 
 	srv := &http.Server{
 		Addr:    Conf.App.ListenPort,
