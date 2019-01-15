@@ -6,7 +6,7 @@ Build the source for the target machine; e.g.; for linux use: `env GOOS=linux GO
 
 The binary will be named `contact-book-api`.
  
-### First time setup (CentOS)
+### First time setup (with nginx on CentOS)
 1. Move binary to `/usr/share/contact-book-api/` and copy the config.json file to `/usr/share/contact-book-api/config/` folder.
 2. Setup a reverse proxy in nginx to point to `http://localhost:8888`. This is the default port, use whatever port you set in `config.json`
 3. Remember to add `proxy_set_header Authorization $http_authorization;` in nginx config for this service so that the `Authorization` header is sent to the API for every request.
