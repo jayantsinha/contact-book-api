@@ -54,5 +54,21 @@ if $programname == 'contactbookapi' or $syslogtag == 'contactbookapi' then /var/
 
 You will start seeing the logs in the log file.
 
-### Updates
-To push an update, just move contact-book-api binary to `/usr/share/contact-book-api/` and restart the service by `systemctl restart contactbookapi`.
+
+### Endpoints
+
+All the endpoints except the ping endpoint requires Basic Auth. Since the API uses email in place of username therefore, Authorization header will be `Basic base64(email:password)`.
+
+1. `GET /ping`: PING test
+2. `GET /v1/contacts/page/:page`: Get contact details list by page number (each page contains 10 entities as of now)
+3. `DELETE /v1/contact/:id`: Delete a contact by contact ID
+4. `POST   /v1/contact`: Add a contact. The body should be JSON with the following structure: `{
+                                                                                               	"first_name": "John",
+                                                                                               	"last_name": "Doe",
+                                                                                               	"email": "johndoe@example.com"
+                                                                                               }`
+5. `PUT    /v1/contact/:id`: Edit a contact by contact ID (JSON request is same as POST).
+6. `PUT    /v1/contact`: Edit a contact by email (JSON request is same as POST).
+7. `GET    /v1/contacts/search`: Search for contacts. The URL should be in the following format:
+        `/v1/contacts/search?first_name=john&last_name=doe&email=xyz@example.com&page=1`.
+    At least one of the given parameters are required. The search gives preference in the following order: `first_name` > `last_name` > `email`. If only `email` param is passed, then full preference will be given to `email` field. 
