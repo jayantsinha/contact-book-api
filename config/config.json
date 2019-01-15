@@ -1,0 +1,18 @@
+{
+  "db": {
+    "host": "127.0.0.1",
+    "port": "3306",
+    "user": "root",
+    "password": "onyx",
+    "name": "contact_book"
+  },
+  "app": {
+    "domain": "localhost",
+    "listen-port": ":8888",
+    "logging": true,
+    "environment": "development"
+  },
+  "logging": {
+    "path": "/tmp/contact-book.log"
+  }
+}
