@@ -60,9 +60,12 @@ func main() {
 	v1 := router.Group("/v1")
 	{
 		v1.GET("/contacts/page/:page", controller.GetContacts)
-		v1.DELETE("/contact/:id", controller.DeleteContact)
+		v1.DELETE("/contact/:id", controller.DeleteContactByID)
 		v1.POST("/contact", controller.CreateContact)
-		v1.PUT("/contact", controller.EditContact)
+		v1.PUT("/contact/:id", controller.EditContactByID)
+		v1.PUT("/contact", controller.EditContactByEmail)
+		v1.GET("/contact", controller.SearchContact)
+
 	}
 
 	srv := &http.Server{
