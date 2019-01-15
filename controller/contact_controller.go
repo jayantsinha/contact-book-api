@@ -3,6 +3,7 @@ package controller
 import (
 	"contact-book-api/model"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
@@ -21,7 +22,10 @@ type SearchQueryParams struct {
 	FirstName string `form:"first_name"`
 	LastName  string `form:"last_name"`
 	Email     string `form:"email"`
+	Page      string `form:"page"`
 }
+
+var contactsResp []model.ContactResp
 
 // GetContacts returns a list of contacts by page number specified.
 // Handler for [GET] /contacts/page/:page
@@ -52,8 +56,9 @@ func GetContacts(c *gin.Context) {
 		return
 	}
 
-	// TODO: Add a limit key in response which tells the total number of pages available
-	c.JSON(http.StatusOK, contacts)
+	// TODO: Add a "limit" key in response which tells the total number of pages available
+	copier.Copy(&contactsResp, &contacts)
+	c.JSON(http.StatusOK, contactsResp)
 }
 
 // DeleteContact deletes the contact by contact ID
@@ -164,6 +169,7 @@ func SearchContact(c *gin.Context) {
 	accID := c.MustGet("AccID").(int)
 	db := c.MustGet("DB").(*sqlx.DB)
 	var contacts []model.Contact
+	page := 1
 
 	if err := c.BindQuery(params); err != nil {
 		log.Println("Invalid query parameters")
@@ -186,8 +192,11 @@ func SearchContact(c *gin.Context) {
 	if params.Email != "" {
 		matcher += "+" + params.Email + "* "
 	}
+	if params.Page != "" {
+		page, _ = strconv.Atoi(params.Page)
+	}
 
-	err := db.Select(&contacts, "SELECT * FROM contacts WHERE MATCH(first_name, last_name, email) AGAINST(? IN BOOLEAN MODE) AND account_id = ?", matcher, accID)
+	err := db.Select(&contacts, "SELECT * FROM contacts WHERE MATCH(first_name, last_name, email) AGAINST(? IN BOOLEAN MODE) AND account_id = ? LIMIT ?, 10", matcher, accID, (page*10)-10)
 	if err != nil {
 		log.Println("Error running search query | ", err)
 	}
@@ -196,5 +205,6 @@ func SearchContact(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, contacts)
+	copier.Copy(&contactsResp, &contacts)
+	c.JSON(http.StatusOK, contactsResp)
 }
